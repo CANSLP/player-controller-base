@@ -44,19 +44,23 @@ public class PlayerController : MonoBehaviour
     private float crouchEyeHeight = -0.25f;
     private float _cameraHeight;
     private float _crouch;
+    [SerializeField]
+    private float crouchWalk = 0.5f;
 
     private bool _onGround;
 
     private bool _inWater;
     private bool _underWater;
     private float _waterSurface;
-    public float _cameraWaterSurface;
+    private float _cameraWaterSurface;
 
     private int _climbCount;
     private bool _onClimb;
 
     [SerializeField]
     private float climbPower = 0.2f;
+    [SerializeField]
+    private float climbFriction = 0.25f;
 
     [SerializeField]
     private AudioSource jump;
@@ -105,6 +109,11 @@ public class PlayerController : MonoBehaviour
         moveBody();
         moveCamera();
 
+        //getGroundCollision();
+        //getWaterCollision();
+    }
+
+    void Update(){
         getGroundCollision();
         getWaterCollision();
     }
@@ -220,8 +229,9 @@ public class PlayerController : MonoBehaviour
         }
         if(motion.magnitude>0){
             float walkAngle = Mathf.Atan2(-motion.y,motion.x);
-            velocity.x+=Mathf.Cos(walkAngle+(cameraAngle.y*(Mathf.PI/180f)))*walkSpeed*(1-(0.5f*_crouch));
-            velocity.z-=Mathf.Sin(walkAngle+(cameraAngle.y*(Mathf.PI/180f)))*walkSpeed*(1-(0.5f*_crouch));
+            float speed = walkSpeed*(1-_crouch*(1-crouchWalk));
+            velocity.x+=Mathf.Cos(walkAngle+(cameraAngle.y*(Mathf.PI/180f)))*speed;
+            velocity.z-=Mathf.Sin(walkAngle+(cameraAngle.y*(Mathf.PI/180f)))*speed;
         } else {
             if(_onGround&&!(Input.GetKey("space")&&playMode)){
                 velocity.y=0;
@@ -263,7 +273,7 @@ public class PlayerController : MonoBehaviour
             }
         }
         if(_onClimb){
-            velocity*=0.75f;
+            velocity*=(1-climbFriction);
         }
         return velocity;
     }
